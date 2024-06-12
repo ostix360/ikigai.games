@@ -1,0 +1,4 @@
+datasets
+chromadb
+sentence_transformers
+pdfplumber

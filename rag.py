@@ -34,14 +34,11 @@ def query_results_to_records(results: "QueryResult"):
         return []
     memory_records = [
         {
-            "external_source_name": metadata["external_source_name"],
+            "document_name": metadata["document_name"],
             "id": metadata["id"],
-            "description": metadata["description"],
             "text": document,
             "embedding": embedding,
-            "additional_metadata": metadata["additional_metadata"],
             "key": id,
-            "timestamp": metadata["timestamp"],
         }
         for id, document, embedding, metadata in zip(
             results["ids"][0],
@@ -89,7 +86,7 @@ class LocalEmbeddingFunction(EmbeddingFunction[Documents]):
         self._matryoshka_dim = matryoshka_dim
 
     def __call__(self, input: Documents) -> Embeddings:
-        embeddings = self._model.encode(input, convert_to_tensor=True)
+        embeddings = self._model.encode(input, convert_to_tensor=True).unsqueeze(0)
         embeddings = F.layer_norm(embeddings, normalized_shape=(embeddings.shape[1],))
         embeddings = embeddings[:, :self._matryoshka_dim]
         embeddings = F.normalize(embeddings, p=2, dim=1)
@@ -184,18 +181,19 @@ class Memory:
         if isinstance(documents, Document):
             documents = [documents]
         for doc in documents:
-            chunked_doc = [doc.text[i:i+self._chunk_size] for i in range(0, len(doc), self._chunk_size - self._overlap)]
-            metadata = {
-                "document_name": doc.name,
-                "id": sha256(
-                        (chunked_doc + datetime.now().isoformat()).encode()
-                    ).hexdigest(),
-            }
-            metadatas.append(metadata)
-            chunks.extend(chunked_doc)
+            chunked_doc = [doc.text[i:i+self._chunk_size] for i in range(0, len(doc.text), self._chunk_size - self._overlap)]
+            for chunk in chunked_doc:
+                metadata = {
+                    "document_name": doc.name,
+                    "id": sha256(
+                            (chunk + datetime.now().isoformat()).encode()
+                        ).hexdigest(),
+                }
+                metadatas.append(metadata)
+                chunks.append(chunk)
         collection.add(
             documents=chunks,
-            metadata=metadatas,
+            metadatas=metadatas,
             ids=[m["id"] for m in metadatas],
         )
 
@@ -226,7 +224,7 @@ class Memory:
         collection = self._get_collection(collection_name)
         if collection.count() == 0:
             return []
-        embedding = array(self._embedder.embeddings(user_input))
+        embedding = array(self._embedder(user_input))
         results = collection.query(
             query_embeddings=embedding.tolist(),
             n_results=limit,
@@ -291,13 +289,13 @@ class Memory:
         if results:
             for result in results:
                 metadata = (
-                    result["documents"]
-                    if "documents" in result
+                    result["text"]
+                    if "text" in result
                     else ""
                 )
                 external_source = (
-                    result["external_source_name"]
-                    if "external_source_name" in result
+                    result["document_name"]
+                    if "document_name" in result
                     else None
                 )
                 if external_source:

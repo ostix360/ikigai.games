@@ -1,3 +1,7 @@
+transformers
+peft
+bitsandbytes
+llama
 datasets
 chromadb
 sentence_transformers

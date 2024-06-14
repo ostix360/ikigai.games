@@ -1,7 +1,7 @@
 transformers
 peft
 bitsandbytes
-llama
+llama-cpp-python
 datasets
 chromadb
 sentence_transformers

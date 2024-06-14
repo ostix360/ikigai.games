@@ -1,8 +1,8 @@
 from document import Document
 import pdfplumber
 
-# from .infere import Inference
-# from .finetune import TrainerProcessor
+from .infere import Inference
+from .finetune import TrainerProcessor
 from rag import Memory
 from datasets import load_dataset
 from argparse import ArgumentParser
@@ -76,10 +76,10 @@ def test_rag(file_path, prompt):
     """
     memory = Memory("database")
     memory.create_collection("physics")
-    # with pdfplumber.open(file_path) as pdf:
-    #     content = "\n".join([page.extract_text() for page in pdf.pages])
-    # document = Document(content, file_path.split("/")[-1].split(".")[0])
-    # memory.save_documents_to_db(collection_name="physics", documents=document)
+    with pdfplumber.open(file_path) as pdf:
+        content = "\n".join([page.extract_text() for page in pdf.pages])
+    document = Document(content, file_path.split("/")[-1].split(".")[0])
+    memory.save_documents_to_db(collection_name="physics", documents=document)
     extract = memory.get_memories(prompt, collection_name="physics")
     print(extract)
 

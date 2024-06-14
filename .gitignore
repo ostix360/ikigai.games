@@ -132,4 +132,7 @@ cython_debug/
 # Ignore VSCode settings
 .vscode/
 
+# Ignore IntelliJ settings
+.idea/
+
 database/

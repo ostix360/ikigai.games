@@ -79,11 +79,11 @@ class LocalEmbeddingFunction(EmbeddingFunction[Documents]):
     # If you have a beefier machine, try "gtr-t5-large".
     # for a full list of options: https://huggingface.co/sentence-transformers, https://www.sbert.net/docs/pretrained_models.html
     def __init__(
-        self,
-        model_name= "nomic-ai/nomic-embed-text-v1.5",
-        device= "gpu",
-        matryoshka_dim = 512,
-        **kwargs,
+            self,
+            model_name="nomic-ai/nomic-embed-text-v1.5",
+            device="cuda",
+            matryoshka_dim=512,
+            **kwargs,
     ):
         """Initialize SentenceTransformerEmbeddingFunction.
 
@@ -109,7 +109,7 @@ class LocalEmbeddingFunction(EmbeddingFunction[Documents]):
 
     def __call__(self, input: Documents) -> Embeddings:
         embeddings = self._model.encode(input, convert_to_tensor=True)
-        if len(input) == 1:
+        if isinstance(input, str) == 1:
             embeddings = embeddings.unsqueeze(0)
         embeddings = F.layer_norm(embeddings, normalized_shape=(embeddings.shape[1],))
         embeddings = embeddings[:, :self._matryoshka_dim]
@@ -135,11 +135,11 @@ class Memory:
     """
 
     def __init__(
-        self,
-        db_path = "embedding_database",
-        chunk_size = 512,
-        overlap = 10,
-        ):
+            self,
+            db_path="embedding_database",
+            chunk_size=512,
+            overlap=10,
+    ):
         """
         Initializes a new instance of the Memory class.
 
@@ -155,7 +155,7 @@ class Memory:
         memories_dir = os.path.join(os.getcwd(), db_path)
         if not os.path.exists(memories_dir):
             os.makedirs(memories_dir)
-        self._embedder = LocalEmbeddingFunction(device="cpu", trust_remote_code=True)
+        self._embedder = LocalEmbeddingFunction(device="cuda", trust_remote_code=True)
         self._chroma_client = chromadb.PersistentClient(path=memories_dir)
         self._chunk_size = chunk_size
         self._overlap = overlap
@@ -185,7 +185,8 @@ class Memory:
         if self._collections is None:
             self._collections = {}
         if collection_name not in self._collections:
-            self._collections[collection_name] = self._chroma_client.get_or_create_collection(collection_name, embedding_function=self._embedder)
+            self._collections[collection_name] = self._chroma_client.get_or_create_collection(collection_name,
+                                                                                              embedding_function=self._embedder)
         return self._collections[collection_name]
 
     def save_documents_to_db(self, collection_name, documents):
@@ -205,13 +206,14 @@ class Memory:
         if isinstance(documents, Document):
             documents = [documents]
         for doc in documents:
-            chunked_doc = [doc.text[i:i+self._chunk_size] for i in range(0, len(doc.text), self._chunk_size - self._overlap)]
+            chunked_doc = [doc.text[i:i + self._chunk_size] for i in
+                           range(0, len(doc.text), self._chunk_size - self._overlap)]
             for chunk in chunked_doc:
                 metadata = {
                     "document_name": doc.name,
                     "id": sha256(
-                            (chunk + datetime.now().isoformat()).encode()
-                        ).hexdigest(),
+                        (chunk + datetime.now().isoformat()).encode()
+                    ).hexdigest(),
                 }
                 metadatas.append(metadata)
                 chunks.append(chunk)
@@ -222,12 +224,12 @@ class Memory:
         )
 
     def get_memories_data(
-        self,
-        user_input,
-        collection_name,
-        limit_to_document,
-        limit,
-        min_relevance_score = 0.0,
+            self,
+            user_input,
+            collection_name,
+            limit_to_document,
+            limit,
+            min_relevance_score=0.0,
     ):
         """
         Retrieve memories data based on the given user input and search criteria.
@@ -280,12 +282,12 @@ class Memory:
         return top_results
 
     def get_memories(
-        self,
-        user_input,
-        collection_name,
-        limit_to_document = None,
-        limit = 5,
-        min_relevance_score = 0.0,
+            self,
+            user_input,
+            collection_name,
+            limit_to_document=None,
+            limit=5,
+            min_relevance_score=0.0,
     ):
         """
         Retrieves memories based on the given parameters.
@@ -327,4 +329,3 @@ class Memory:
                 if metadata not in response and metadata != "":
                     response.append(metadata)
         return response
-    

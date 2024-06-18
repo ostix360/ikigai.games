@@ -108,7 +108,9 @@ class LocalEmbeddingFunction(EmbeddingFunction[Documents]):
         self._matryoshka_dim = matryoshka_dim
 
     def __call__(self, input: Documents) -> Embeddings:
-        embeddings = self._model.encode(input, convert_to_tensor=True).unsqueeze(0)
+        embeddings = self._model.encode(input, convert_to_tensor=True)
+        if len(input) == 1:
+            embeddings = embeddings.unsqueeze(0)
         embeddings = F.layer_norm(embeddings, normalized_shape=(embeddings.shape[1],))
         embeddings = embeddings[:, :self._matryoshka_dim]
         embeddings = F.normalize(embeddings, p=2, dim=1)

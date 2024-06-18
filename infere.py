@@ -14,6 +14,7 @@ class Inference:
             flash_attn=True,
             n_gpu_layers=-1,
             n_ctx=8000,
+            n_threads=4,
             use_mlock=False,
             verbose=False,
             # draft_model=LlamaPromptLookupDecoding(
@@ -32,7 +33,6 @@ class Inference:
         :return: the generated response that corresponds to the prompt
         :rtype: List[str]
         """
-
         msgs = []
         if isinstance(prompts, list):
             for prompt in prompts:

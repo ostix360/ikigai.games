@@ -89,6 +89,7 @@ if __name__ == "__main__":
     parser.add_argument("--dataset_path", type=str, help="The path to the dataset to be tested during fine-tuning.")
     parser.add_argument("--file_path", type=str, help="The path to the pdf to be tested during RAG.")
     parser.add_argument("--prompt", type=str, help="The prompt to be tested during RAG.")
+    parser.add_argument("--save_model", type=bool, help="Save the model for inference.")
     args = parser.parse_args()
 
     if args.model_path:
@@ -97,3 +98,6 @@ if __name__ == "__main__":
         test_finetune(args.dataset_path)
     if args.file_path and args.prompt:
         test_rag(args.file_path, args.prompt)
+        print("RAG test succeed")
+    if args.save_model:
+        test_save_model()

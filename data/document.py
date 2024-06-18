@@ -1,4 +1,6 @@
+from dataclasses import dataclass
 
+@dataclass
 class Document:
     """
     Represents a document with text and a name.

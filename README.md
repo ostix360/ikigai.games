@@ -53,6 +53,18 @@ It should have the 2 splits train and test.
 
 To save the model finetuned you can call `save_model_inference` and put the number of bits for quantization in parameter from [3,4,6,8]
 
+If the saving crash you can quantize the model manually.
+
+If it crashes you should have the llama.cpp repo cloned at the root of the project.
+
+You can run the following command to quantize the model:
+
+```bash
+python llama.cpp/convert-hf-to-gguf.py ./finetuned --outfile ./finetuned-unsloth.BF16.gguf --outtype bf16
+llama.cpp/llama-quantize ./finetuned-unsloth.BF16.gguf ./finetuned-unsloth.Q6_K.gguf q6_k 12
+```
+
+
 
 ### DPO
 

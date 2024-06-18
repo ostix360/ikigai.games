@@ -2,15 +2,28 @@ from hashlib import sha256
 import os
 import chromadb
 
-from chromadb.api.types import EmbeddingFunction, Documents, Embeddings
+from chromadb.api.types import EmbeddingFunction, Documents, Embeddings, QueryResult
 from typing import Any, Dict, List, cast
-from document import Document
+from data.document import Document
 import torch.nn.functional as F
 from datetime import datetime
 from numpy import array, linalg, ndarray
 
 
-def compute_similarity_scores(embedding, embedding_array):
+def compute_similarity_scores(embedding: ndarray, embedding_array: ndarray) -> ndarray:
+    """
+    Compute the cosine similarity scores between a given embedding and an array of embeddings.
+
+    Args:
+        embedding (numpy.ndarray): The embedding vector.
+        embedding_array (numpy.ndarray): The array of embedding vectors.
+
+    Returns:
+        numpy.ndarray: The array of similarity scores.
+
+    Raises:
+        ValueError: If the embedding or embedding_array is invalid.
+    """
     query_norm = linalg.norm(embedding)
     collection_norm = linalg.norm(embedding_array, axis=1)
     valid_indices = (query_norm != 0) & (collection_norm != 0)
@@ -25,7 +38,16 @@ def compute_similarity_scores(embedding, embedding_array):
     return similarity_scores
 
 
-def query_results_to_records(results: "QueryResult"):
+def query_results_to_records(results: QueryResult) -> List[Dict[str, Any]]:
+    """
+    Convert query results to memory records.
+
+    Args:
+        results (QueryResult): The query results.
+
+    Returns:
+        list: The list of memory records.
+    """
     try:
         if isinstance(results["ids"][0], str):
             for k, v in results.items():

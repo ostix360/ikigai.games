@@ -3,6 +3,8 @@ peft
 bitsandbytes
 llama-cpp-python
 datasets
+gguf
+protobuf
 chromadb
 sentence_transformers
 pdfplumber

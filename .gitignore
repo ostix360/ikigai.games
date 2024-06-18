@@ -136,3 +136,8 @@ cython_debug/
 .idea/
 
 database/
+finetuned/
+llama.cpp/
+train/
+
+*.gguf

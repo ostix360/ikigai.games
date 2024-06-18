@@ -1,7 +1,6 @@
 transformers
 peft
 bitsandbytes
-llama-cpp-python
 datasets
 gguf
 protobuf

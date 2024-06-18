@@ -25,6 +25,14 @@ To install unlsoth please look at the original [repo](https://github.com/unsloth
 pip install -r requirements.txt
 ```
 
+3. Install [llama-cpp-python](https://github.com/abetlen/llama-cpp-python)
+
+```bash
+CMAKE_ARGS="-DLLAMA_CUDA=on" pip install llama-cpp-python
+```
+
+Or use prebuild version (look at the llama-cpp-python repo).
+
 ### Repo organisation
 
 1. Finetuning

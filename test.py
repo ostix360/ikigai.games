@@ -1,11 +1,13 @@
-from document import Document
+from data.document import Document
 import pdfplumber
 
-from .infere import Inference
-from .finetune import TrainerProcessor
+from infere import Inference
+from finetune import TrainerProcessor
 from rag import Memory
 from datasets import load_dataset
 from argparse import ArgumentParser
+
+from utils import get_datasets, apply_chat_template
 
 INSTRUCT = {"role": "system",
                  "content": "You are a helpful digital assistant. Please provide safe, ethical and accurate information to the user."}
@@ -36,32 +38,53 @@ def test_finetune(dataset_path):
     Returns:
         None
     """
-    trainer_processor = TrainerProcessor(None)
-    dataset = load_dataset(dataset_path)
+    trainer_processor = TrainerProcessor(max_seq_length=2048)
+    if dataset_path == "default":
+        dataset_path = "HuggingFaceH4/ultrafeedback_binarized"
+    """
+    To use the utility function, the dataset must be have the following columns:
+    - prompt: The prompt of the user.
+    - chosen: The correct / better response to the prompt.
+    - rejected: The incorrect / worse response to the prompt.
+    """
+    raw_datasets = get_datasets(
+        {dataset_path: 0.02},  # 0.5% sampled
+        splits=["train_prefs"],   # if you have splits in the dataset
+    )
+    column_names = list(raw_datasets["train"].features)
 
-    def process_data(example):
-        """
-        Preprocesses examples from the dataset.
+    raw_datasets = raw_datasets.map(
+        apply_chat_template,
+        fn_kwargs={"tokenizer": trainer_processor.tokenizer, "task": "dpo"},
+        num_proc=12,
+        remove_columns=column_names,
+        desc="Formatting comparisons with prompt template",
+    )
 
-        Args:
-            example (str): The examples to be processed.
-
-        Returns:
-            dict: The processed examples.
-        """
-        return { 
-            "text" :
-                trainer_processor.tokenizer.tokenizer.apply_chat_template(
-                    [INSTRUCT, {"role": "user", "content": example}], add_generation_prompt=True
-                )
-        }
-    
-    dataset = dataset.map(process_data)
-    dataset = dataset.train_test_split(test_size=0.05)
+    # Replace column names with what TRL needs, text_chosen -> chosen and text_rejected -> rejected
+    dataset = raw_datasets.rename_columns({"text_prompt": "prompt", "text_chosen": "chosen", "text_rejected": "rejected"})
+    dataset = dataset["train"].train_test_split(test_size=0.05)  # Not necessary for already corrected split dataset
     trainer_processor.set_dataset(dataset)
-    trainer, _ = trainer_processor.prepare_for_training("train", use_dpo=False)
+    trainer, _ = trainer_processor.prepare_for_training("train", use_orpo=True, batch_size=1)
     trainer.train()
-    trainer_processor.save_model_for_inference(output_dir="finetuned",bits=6)
+    trainer_processor.save_model_for_inference(output_dir="finetuned", bits=6)
+
+
+def test_save_model():
+    """
+    Save the model for inference.
+
+    Args:
+
+    Returns: None
+    """
+    import os
+    os.environ['PATH'] += ':'+"/home/ostix/.virtualenvs/ikigai/bin"
+    trainer_processor = TrainerProcessor(max_seq_length=2048, model_name_or_path="finetuned")
+
+    trainer_processor.save_model_for_inference(output_dir="finetuned", bits=6)
+
+
 
 def test_rag(file_path, prompt):
     """
@@ -93,9 +116,13 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if args.model_path:
+        print("Testing inference")
         test_inference(args.model_path)
+        print("inference test succeed")
     if args.dataset_path:
+        print("Testing fine tuning")
         test_finetune(args.dataset_path)
+        print("fine-tuning succeed")
     if args.file_path and args.prompt:
         test_rag(args.file_path, args.prompt)
         print("RAG test succeed")

@@ -4,7 +4,6 @@ import pdfplumber
 from infere import Inference
 from finetune import TrainerProcessor
 from rag import Memory
-from datasets import load_dataset
 from argparse import ArgumentParser
 
 from utils import get_datasets, apply_chat_template
@@ -103,7 +102,10 @@ def test_rag(file_path, prompt):
         content = "\n".join([page.extract_text() for page in pdf.pages])
     document = Document(content, file_path.split("/")[-1].split(".")[0])
     memory.save_documents_to_db(collection_name="physics", documents=document)
-    extract = memory.get_memories(prompt, collection_name="physics")
+    extract = memory.get_memories(prompt, collection_name="physics", limit=8)
+    # save the memories to a file
+    with open("memories.txt", "w") as f:
+        f.write(str(extract))
     print(extract)
 
 if __name__ == "__main__":

@@ -212,7 +212,7 @@ class Memory:
                 metadata = {
                     "document_name": doc.name,
                     "id": sha256(
-                        (chunk + datetime.now().isoformat()).encode()
+                        chunk.encode()
                     ).hexdigest(),
                 }
                 metadatas.append(metadata)

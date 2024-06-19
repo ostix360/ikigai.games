@@ -11,7 +11,7 @@ Before anything please install the necessary library:
 It's recommanded to use a virtual environement:
 
 ```bash
-python -m ./venv
+python -m venv ./.venv
 ./venv/bin/activate
 ```
 

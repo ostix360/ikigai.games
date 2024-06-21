@@ -1,12 +1,7 @@
 from data.document import Document
-import pdfplumber
 
-from infere import Inference
-from finetune import TrainerProcessor
-from rag import Memory
 from argparse import ArgumentParser
 
-from utils import get_datasets, apply_chat_template
 
 INSTRUCT = {"role": "system",
                  "content": "You are a helpful digital assistant. Please provide safe, ethical and accurate information to the user."}
@@ -22,6 +17,7 @@ def test_inference(model_path):
         None
 
     """
+    from infere import Inference
     inf = Inference(model_path)
     response = inf.generate_response("Make a story about Joe and his dog.")
 
@@ -37,6 +33,9 @@ def test_finetune(dataset_path):
     Returns:
         None
     """
+    from utils import get_datasets, apply_chat_template
+    from finetune import TrainerProcessor
+
     trainer_processor = TrainerProcessor(max_seq_length=2048)
     if dataset_path == "default":
         dataset_path = "HuggingFaceH4/ultrafeedback_binarized"
@@ -77,6 +76,7 @@ def test_save_model():
 
     Returns: None
     """
+    from finetune import TrainerProcessor
     import os
     os.environ['PATH'] += ':'+"/home/ostix/.virtualenvs/ikigai/bin"
     trainer_processor = TrainerProcessor(max_seq_length=2048, model_name_or_path="finetuned")
@@ -96,6 +96,8 @@ def test_rag(file_path, prompt):
     Returns:
         None
     """
+    from rag import Memory
+    import pdfplumber
     memory = Memory("database")
     memory.create_collection("physics")
     with pdfplumber.open(file_path) as pdf:
@@ -107,6 +109,7 @@ def test_rag(file_path, prompt):
     with open("memories.txt", "w") as f:
         f.write(str(extract))
     print(extract)
+
 
 if __name__ == "__main__":
     parser = ArgumentParser(description="Test the different components of the project.")

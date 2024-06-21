@@ -24,7 +24,7 @@ class Inference:
     
     def generate_response(
         self,
-        prompts: List[str] | str,
+        prompts: List[str],
     ) -> List[str]:
         """Method to generate response from the model.
 

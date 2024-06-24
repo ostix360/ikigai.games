@@ -98,6 +98,9 @@ def test_rag(file_path, prompt):
     """
     from rag import Memory
     import pdfplumber
+    import nltk
+    nltk.download('punkt')
+
     memory = Memory("database")
     memory.create_collection("physics")
     with pdfplumber.open(file_path) as pdf:

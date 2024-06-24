@@ -109,6 +109,8 @@ You can change the system prompt for better result.
 
 You can use the RAG model to retrieve information from a pdf for example.
 
+The chunking part is now specific to french but other language can be added.
+
 The memory only accept text for now.
 
 It compute the similarity between the text in prompt and the memory retrieved.

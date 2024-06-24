@@ -6,7 +6,7 @@ from chromadb.api.types import EmbeddingFunction, Documents, Embeddings, QueryRe
 from typing import Any, Dict, List, cast
 from data.document import Document
 import torch.nn.functional as F
-from datetime import datetime
+from nltk.tokenize import sent_tokenize
 from numpy import array, linalg, ndarray
 
 
@@ -70,6 +70,28 @@ def query_results_to_records(results: QueryResult) -> List[Dict[str, Any]]:
         )
     ]
     return memory_records
+
+
+def chunk_document(document, chunk_size=512) -> List[str]:
+    """
+    Chunk the given documents into smaller parts.
+
+    Args:
+        document (str): The list of Document objects to be chunked.
+        chunk_size (int, optional): The size of each chunk when splitting documents. Defaults to 512.
+
+    Returns:
+        List[str]: A list of chunked Document objects.
+    """
+    paragraphs = []
+    sentences = sent_tokenize(document, language='french')
+    paragraph = " "
+    for sentence in sentences:
+        paragraph += sentence
+        if len(paragraph) > chunk_size:
+            paragraphs.append(paragraph)
+            paragraph = ""
+    return paragraphs
 
 
 class LocalEmbeddingFunction(EmbeddingFunction[Documents]):
@@ -138,7 +160,6 @@ class Memory:
             self,
             db_path="embedding_database",
             chunk_size=512,
-            overlap=10,
     ):
         """
         Initializes a new instance of the Memory class.
@@ -146,7 +167,6 @@ class Memory:
         Args:
             db_path (str): The path to the database directory. Defaults to "embedding_database".
             chunk_size (int): The size of each chunk when splitting documents. Defaults to 512.
-            overlap (int): The overlap between consecutive chunks. Defaults to 10.
 
         Returns:
             None
@@ -158,7 +178,6 @@ class Memory:
         self._embedder = LocalEmbeddingFunction(device="cuda", trust_remote_code=True)
         self._chroma_client = chromadb.PersistentClient(path=memories_dir)
         self._chunk_size = chunk_size
-        self._overlap = overlap
 
     def create_collection(self, collection_name):
         """
@@ -206,8 +225,7 @@ class Memory:
         if isinstance(documents, Document):
             documents = [documents]
         for doc in documents:
-            chunked_doc = [doc.text[i:i + self._chunk_size] for i in
-                           range(0, len(doc.text), self._chunk_size - self._overlap)]
+            chunked_doc = chunk_document(doc.text, self._chunk_size)
             for chunk in chunked_doc:
                 metadata = {
                     "document_name": doc.name,

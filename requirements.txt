@@ -7,3 +7,4 @@ protobuf
 chromadb
 sentence_transformers
 pdfplumber
+nltk

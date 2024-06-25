@@ -84,7 +84,7 @@ def chunk_document(document, chunk_size=512) -> List[str]:
         List[str]: A list of chunked Document objects.
     """
     paragraphs = []
-    sentences = sent_tokenize(document, language='french')
+    sentences = document.split(".")
     paragraph = " "
     for sentence in sentences:
         paragraph += sentence
@@ -204,8 +204,10 @@ class Memory:
         if self._collections is None:
             self._collections = {}
         if collection_name not in self._collections:
-            self._collections[collection_name] = self._chroma_client.get_or_create_collection(collection_name,
-                                                                                              embedding_function=self._embedder)
+            self._collections[collection_name] = self._chroma_client.get_or_create_collection(
+                collection_name,
+                embedding_function=self._embedder
+            )
         return self._collections[collection_name]
 
     def save_documents_to_db(self, collection_name, documents):
@@ -227,6 +229,7 @@ class Memory:
         for doc in documents:
             chunked_doc = chunk_document(doc.text, self._chunk_size)
             for chunk in chunked_doc:
+                # create metadat for each chunk
                 metadata = {
                     "document_name": doc.name,
                     "id": sha256(
@@ -235,6 +238,7 @@ class Memory:
                 }
                 metadatas.append(metadata)
                 chunks.append(chunk)
+        # save all the chunk on the db, the embedding will be computed automatically
         collection.add(
             documents=chunks,
             metadatas=metadatas,

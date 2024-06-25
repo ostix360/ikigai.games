@@ -61,7 +61,7 @@ def test_finetune(dataset_path):
 
     # Replace column names with what TRL needs, text_chosen -> chosen and text_rejected -> rejected
     dataset = raw_datasets.rename_columns({"text_prompt": "prompt", "text_chosen": "chosen", "text_rejected": "rejected"})
-    dataset = dataset["train"].train_test_split(test_size=0.05)  # Not necessary for already corrected split dataset
+    dataset = dataset["train"].train_test_split(test_size=0.05)  # Not necessary for already split dataset
     trainer_processor.set_dataset(dataset)
     trainer, _ = trainer_processor.prepare_for_training("train", use_orpo=True, batch_size=1)
     trainer.train()
@@ -101,13 +101,13 @@ def test_rag(file_path, prompt):
     import nltk
     nltk.download('punkt')
 
-    memory = Memory("database")
-    memory.create_collection("physics")
-    with pdfplumber.open(file_path) as pdf:
+    memory = Memory(db_path="database", chunk_size=512) # create a memory object
+    memory.create_collection("physics") # create a collection
+    with pdfplumber.open(file_path) as pdf: # read the pdf file
         content = "\n".join([page.extract_text() for page in pdf.pages])
-    document = Document(content, file_path.split("/")[-1].split(".")[0])
-    memory.save_documents_to_db(collection_name="physics", documents=document)
-    extract = memory.get_memories(prompt, collection_name="physics", limit=8)
+    document = Document(content, file_path.split("/")[-1].split(".")[0])    # create a document object
+    memory.save_documents_to_db(collection_name="physics", documents=document)  # save the document to the collection
+    extract = memory.get_memories(prompt, collection_name="physics", limit=8, )         # retrieve relevant memories
     # save the memories to a file
     with open("memories.txt", "w") as f:
         f.write(str(extract))

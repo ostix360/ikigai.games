@@ -1,5 +1,7 @@
 from llama_cpp import Llama
 from typing import List
+
+
 INSTRUCT = {"role": "system",
                  "content": "You are a helpful digital assistant. Please provide safe, ethical and accurate information to the user."}
 

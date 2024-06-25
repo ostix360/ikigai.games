@@ -87,6 +87,7 @@ class TrainerProcessor:
         args = TrainingArguments(
             per_device_train_batch_size=batch_size,
             warmup_ratio=0.05,
+            learning_rate=3e-5,
             num_train_epochs=num_epoch,
             fp16=not is_bfloat16_supported(),
             bf16=is_bfloat16_supported(),

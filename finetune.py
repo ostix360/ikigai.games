@@ -5,6 +5,7 @@ from transformers import TrainingArguments
 from trl import SFTTrainer, DPOTrainer, ORPOConfig, ORPOTrainer
 from unsloth import FastLanguageModel, is_bfloat16_supported
 
+
 # if using jupyter notebook DPOTrainer need to be patched
 # from unsloth import PatchDPOTrainer
 # PatchDPOTrainer()
@@ -51,12 +52,13 @@ class TrainerProcessor:
             dataset (Dataset): The dataset to be set.
         """
         self.dataset = dataset
-        self.model = FastLanguageModel.get_peft_model(    # define here to avoid saving useless parameter when saving crash
+        self.model = FastLanguageModel.get_peft_model(
+            # define here to avoid saving useless parameter when saving crash
             self.model,
-            r=16,    # can be set to 32 to train higher amount of parameters
+            r=16,  # can be set to 32 to train higher amount of parameters
             target_modules=["q_proj", "k_proj", "v_proj", "o_proj",
                             "gate_proj", "up_proj", "down_proj", ],
-            lora_alpha=32,    # can be set to 64 if r = 32
+            lora_alpha=32,  # can be set to 64 if r = 32
             lora_dropout=0,  # Supports any, but = 0 is optimized
             bias="none",  # Supports any, but = "none" is optimized
             # [NEW] "unsloth" uses 30% less VRAM, fits 2x larger batch sizes!

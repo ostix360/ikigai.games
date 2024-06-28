@@ -1,13 +1,13 @@
-from hashlib import sha256
 import os
-import chromadb
-
-from chromadb.api.types import EmbeddingFunction, Documents, Embeddings, QueryResult
+from hashlib import sha256
 from typing import Any, Dict, List, cast
-from data.document import Document
+
+import chromadb
 import torch.nn.functional as F
-from nltk.tokenize import sent_tokenize
+from chromadb.api.types import EmbeddingFunction, Documents, Embeddings, QueryResult
 from numpy import array, linalg, ndarray
+
+from data.document import Document
 
 
 def compute_similarity_scores(embedding: ndarray, embedding_array: ndarray) -> ndarray:

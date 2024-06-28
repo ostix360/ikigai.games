@@ -1,10 +1,10 @@
-from data.document import Document
-
 from argparse import ArgumentParser
 
+from data.document import Document
 
 INSTRUCT = {"role": "system",
-                 "content": "You are a helpful digital assistant. Please provide safe, ethical and accurate information to the user."}
+            "content": "You are a helpful digital assistant. Please provide safe, ethical and accurate information to the user."}
+
 
 def test_inference(model_path):
     """
@@ -22,6 +22,7 @@ def test_inference(model_path):
     response = inf.generate_response("Make a story about Joe and his dog.")
 
     print(response)
+
 
 def test_finetune(dataset_path):
     """
@@ -46,8 +47,8 @@ def test_finetune(dataset_path):
     - rejected: The incorrect / worse response to the prompt.
     """
     raw_datasets = get_datasets(
-        {dataset_path: 0.02},  # 0.5% sampled
-        splits=["train_prefs"],   # if you have splits in the dataset
+        {dataset_path: 0.02},  # 2% sampled
+        splits=["train_prefs"],  # if you have splits in the dataset
     )
     column_names = list(raw_datasets["train"].features)
 
@@ -60,7 +61,8 @@ def test_finetune(dataset_path):
     )
 
     # Replace column names with what TRL needs, text_chosen -> chosen and text_rejected -> rejected
-    dataset = raw_datasets.rename_columns({"text_prompt": "prompt", "text_chosen": "chosen", "text_rejected": "rejected"})
+    dataset = raw_datasets.rename_columns(
+        {"text_prompt": "prompt", "text_chosen": "chosen", "text_rejected": "rejected"})
     dataset = dataset["train"].train_test_split(test_size=0.05)  # Not necessary for already split dataset
     trainer_processor.set_dataset(dataset)
     trainer, _ = trainer_processor.prepare_for_training("train", use_orpo=True, batch_size=1)
@@ -78,11 +80,10 @@ def test_save_model():
     """
     from finetune import TrainerProcessor
     import os
-    os.environ['PATH'] += ':'+"/home/ostix/.virtualenvs/ikigai/bin"
+    os.environ['PATH'] += ':' + "/home/ostix/.virtualenvs/ikigai/bin"
     trainer_processor = TrainerProcessor(max_seq_length=2048, model_name_or_path="finetuned")
 
     trainer_processor.save_model_for_inference(output_dir="finetuned", bits=6)
-
 
 
 def test_rag(file_path, prompt):
@@ -101,13 +102,13 @@ def test_rag(file_path, prompt):
     import nltk
     nltk.download('punkt')
 
-    memory = Memory(db_path="database", chunk_size=512) # create a memory object
-    memory.create_collection("physics") # create a collection
-    with pdfplumber.open(file_path) as pdf: # read the pdf file
+    memory = Memory(db_path="database", chunk_size=512)  # create a memory object
+    memory.create_collection("physics")  # create a collection
+    with pdfplumber.open(file_path) as pdf:  # read the pdf file
         content = "\n".join([page.extract_text() for page in pdf.pages])
-    document = Document(content, file_path.split("/")[-1].split(".")[0])    # create a document object
+    document = Document(content, file_path.split("/")[-1].split(".")[0])  # create a document object
     memory.save_documents_to_db(collection_name="physics", documents=document)  # save the document to the collection
-    extract = memory.get_memories(prompt, collection_name="physics", limit=8, )         # retrieve relevant memories
+    extract = memory.get_memories(prompt, collection_name="physics", limit=8, )  # retrieve relevant memories
     # save the memories to a file
     with open("memories.txt", "w") as f:
         f.write(str(extract))

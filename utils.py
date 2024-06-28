@@ -7,7 +7,7 @@ from datasets.builder import DatasetGenerationError
 
 
 def apply_chat_template(
-    example, tokenizer, task: Literal["sft", "generation", "rm", "dpo"] = "sft", assistant_prefix="<|assistant|>\n"
+        example, tokenizer, task: Literal["sft", "generation", "rm", "dpo"] = "sft", assistant_prefix="<|assistant|>\n"
 ):
     def _strip_prefix(s, pattern):
         # Use re.escape to escape any special characters in the pattern
@@ -67,9 +67,9 @@ def apply_chat_template(
 
 
 def get_datasets(
-    data_config: dict,
-    splits: List[str] = ["train", "test"],
-    shuffle: bool = True,
+        data_config: dict,
+        splits: List[str] = ["train", "test"],
+        shuffle: bool = True,
 ) -> DatasetDict:
     """
     Loads one or more datasets with varying training set proportions.

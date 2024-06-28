@@ -1,16 +1,18 @@
-from llama_cpp import Llama
 from typing import List
 
+from llama_cpp import Llama
 
 INSTRUCT = {"role": "system",
-                 "content": "You are a helpful digital assistant. Please provide safe, ethical and accurate information to the user."}
+            "content": "You are a helpful digital assistant. Please provide safe, ethical and accurate information to the user."}
+
 
 class Inference:
     """Interface to infere a model"""
+
     def __init__(
-        self,
-        model_path,
-        ) -> None:
+            self,
+            model_path,
+    ) -> None:
         self.llm = Llama(
             model_path=model_path,
             flash_attn=True,
@@ -23,10 +25,10 @@ class Inference:
             #     max_ngram_size=3, num_pred_tokens=5
             # ),  # boost?
         )
-    
+
     def generate_response(
-        self,
-        prompts: List[str],
+            self,
+            prompts: List[str],
     ) -> List[str]:
         """Method to generate response from the model.
 
